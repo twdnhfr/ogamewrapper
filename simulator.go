@@ -1094,6 +1094,10 @@ func Simulate(attackerParam Attacker, defenderParam Defender, params SimulatorPa
 	cs := newCombatSimulator(attacker, defender)
 	cs.IsLogging = false
 
+	if params.FleetToDebris > 0 {
+		cs.FleetToDebris = params.FleetToDebris
+	}
+
 	for i := 0; i < nbSimulations; i++ {
 		cs.Rounds = 1
 		cs.Debris = price{}
@@ -1160,7 +1164,8 @@ type Defender struct {
 
 // SimulatorParams ...
 type SimulatorParams struct {
-	Simulations int
+	Simulations   int
+	FleetToDebris float64
 }
 
 // SimulatorResult ...
