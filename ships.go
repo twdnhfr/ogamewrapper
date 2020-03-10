@@ -123,9 +123,9 @@ func (s ShipsInfos) FleetValue() (out int64) {
 }
 
 // FleetExpeditionPoints returns the total Expedition Points of the ships
-func (s ShipsInfos) FleetExpeditionPoints(techs Researches) (out int64) {
+func (s ShipsInfos) FleetExpeditionPoints() (out int64) {
 	for _, ship := range Ships {
-		out += ((ship.GetStructuralIntegrity(techs) * 5.0) / 1000.0) * s.ByID(ship.GetID())
+		out += ((ship.GetStructuralIntegrity(Researches{}) * 5.0) / 1000.0) * s.ByID(ship.GetID())
 	}
 	return
 }
