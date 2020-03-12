@@ -154,6 +154,17 @@ func (s *ShipsInfos) Add(v ShipsInfos) {
 	}
 }
 
+// Sub subtracts two ShipsInfos
+func (s *ShipsInfos) Sub(v ShipsInfos) {
+	for _, ship := range Ships {
+		shipID := ship.GetID()
+		s.Set(shipID, s.ByID(shipID)-v.ByID(shipID))
+		if s.ByID(shipID) < 0 {
+			s.Set(shipID, 0)
+		}
+	}
+}
+
 // ByID get number of ships by ship id
 func (s ShipsInfos) ByID(id ID) int64 {
 	switch id {
