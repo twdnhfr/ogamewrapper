@@ -165,6 +165,17 @@ func (s *ShipsInfos) Sub(v ShipsInfos) {
 	}
 }
 
+// Div divides a ShipsInfo by n
+func (s *ShipsInfos) Div(n int64) {
+	for _, ship := range Ships {
+		shipID := ship.GetID()
+		s.Set(shipID, s.ByID(shipID)/n)
+		if s.ByID(shipID) < 1 {
+			s.Set(shipID, 0)
+		}
+	}
+}
+
 // ByID get number of ships by ship id
 func (s ShipsInfos) ByID(id ID) int64 {
 	switch id {
