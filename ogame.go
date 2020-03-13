@@ -1862,6 +1862,21 @@ func (b *OGame) getEmpire(nbr int64) (interface{}, error) {
 	return b.extractor.ExtractEmpire([]byte(pageHTML), nbr)
 }
 
+// SelectCharacterClass will select the specified class
+func (b *OGame) SelectCharacterClass(class CharacterClass) {
+	//  /game/index.php?page=ingame&component=characterclassselection&characterClassId=3&action=selectClass&ajax=1&asJson=1
+	payload := url.Values{}
+
+	b.postPageContent(url.Values{
+		"page":             {"ingame"},
+		"component":        {"characterclassselection"},
+		"characterClassId": {strconv.FormatInt(int64(class), 10)},
+		"action":           {"selectClass"},
+		"ajax":             {"1"},
+		"asJson":           {"1"},
+	}, payload)
+}
+
 // DoAllianceApplication will do this
 func (b *OGame) DoAllianceApplication(allianceID int64) {
 	// /game/index.php?page=alliance&bewerbung=XXXXXXXXX
