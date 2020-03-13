@@ -83,11 +83,11 @@ type OGame struct {
 	extractor             Extractor
 	apiNewHostname        string
 	characterClass        CharacterClass
-	hasCommander          bool
-	hasAdmiral            bool
-	hasEngineer           bool
-	hasGeologist          bool
-	hasTechnocrat         bool
+	HasCommander          bool
+	HasAdmiral            bool
+	HasEngineer           bool
+	HasGeologist          bool
+	HasTechnocrat         bool
 }
 
 // Preferences ...
@@ -726,11 +726,11 @@ func (b *OGame) cacheFullPageInfo(page string, pageHTML []byte) {
 	b.isVacationModeEnabled = b.extractor.ExtractIsInVacationFromDoc(doc)
 	b.ajaxChatToken, _ = b.extractor.ExtractAjaxChatToken(pageHTML)
 	b.characterClass, _ = b.extractor.ExtractCharacterClassFromDoc(doc)
-	b.hasCommander = b.extractor.ExtractCommanderFromDoc(doc)
-	b.hasAdmiral = b.extractor.ExtractAdmiralFromDoc(doc)
-	b.hasEngineer = b.extractor.ExtractEngineerFromDoc(doc)
-	b.hasGeologist = b.extractor.ExtractGeologistFromDoc(doc)
-	b.hasTechnocrat = b.extractor.ExtractTechnocratFromDoc(doc)
+	b.HasCommander = b.extractor.ExtractCommanderFromDoc(doc)
+	b.HasAdmiral = b.extractor.ExtractAdmiralFromDoc(doc)
+	b.HasEngineer = b.extractor.ExtractEngineerFromDoc(doc)
+	b.HasGeologist = b.extractor.ExtractGeologistFromDoc(doc)
+	b.HasTechnocrat = b.extractor.ExtractTechnocratFromDoc(doc)
 
 	if page == "overview" {
 		b.Player, _ = b.extractor.ExtractUserInfos(pageHTML, b.language)
@@ -1860,6 +1860,20 @@ func (b *OGame) getEmpire(nbr int64) (interface{}, error) {
 	// Replace the Ogame hostname with our custom hostname
 	pageHTML := strings.Replace(string(pageHTMLBytes), b.serverURL, b.apiNewHostname, -1)
 	return b.extractor.ExtractEmpire([]byte(pageHTML), nbr)
+}
+
+// BuyAdmiral will buy the Admiral for 1 week
+func (b *OGame) BuyAdmiral() {
+	pageHTML, _ := b.getPageContent(url.Values{"page": {"premium"}, "ajax": {"1"}, "type": {"3"}})
+
+	r1 := regexp.MustCompile(`page=premium&buynow=1&type=3&days=7&token=(\w+)`)
+	m1 := r1.FindSubmatch(pageHTML)
+
+	token := string(m1[1])
+
+	if len(token) > 0 {
+		b.getPageContent(url.Values{"page": {"premium"}, "buynow": {"1"}, "type": {"3"}, "days": {"7"}, "token": {token}})
+	}
 }
 
 func (b *OGame) createUnion(fleet Fleet, allUnionUsers []UserInfos) (int64, error) {
