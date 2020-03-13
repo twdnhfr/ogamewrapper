@@ -47,6 +47,31 @@ func (r ResourcesBuildings) ByID(id ID) int64 {
 	return 0
 }
 
+// SetByID sets the resource building level
+func (r ResourcesBuildings) SetByID(id ID, level int64) ResourcesBuildings {
+	if id == MetalMine.ID {
+		r.MetalMine = level
+	} else if id == CrystalMine.ID {
+		r.CrystalMine = level
+	} else if id == DeuteriumSynthesizer.ID {
+		r.DeuteriumSynthesizer = level
+	} else if id == SolarPlant.ID {
+		r.SolarPlant = level
+	} else if id == FusionReactor.ID {
+		r.FusionReactor = level
+	} else if id == SolarSatellite.ID {
+		r.SolarSatellite = level
+	} else if id == MetalStorage.ID {
+		r.MetalStorage = level
+	} else if id == CrystalStorage.ID {
+		r.CrystalStorage = level
+	} else if id == DeuteriumTank.ID {
+		r.DeuteriumTank = level
+	}
+
+	return r
+}
+
 func (r ResourcesBuildings) String() string {
 	return "\n" +
 		"           Metal Mine: " + strconv.FormatInt(r.MetalMine, 10) + "\n" +

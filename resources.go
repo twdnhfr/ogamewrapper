@@ -80,6 +80,7 @@ func (r Resources) Sub(v Resources) Resources {
 		Metal:     max64(r.Metal-v.Metal, 0),
 		Crystal:   max64(r.Crystal-v.Crystal, 0),
 		Deuterium: max64(r.Deuterium-v.Deuterium, 0),
+		Energy:    r.Energy - v.Energy,
 	}
 }
 
@@ -89,6 +90,7 @@ func (r Resources) Add(v Resources) Resources {
 		Metal:     r.Metal + v.Metal,
 		Crystal:   r.Crystal + v.Crystal,
 		Deuterium: r.Deuterium + v.Deuterium,
+		Energy:    r.Energy + v.Energy,
 	}
 }
 
