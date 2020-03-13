@@ -1862,6 +1862,20 @@ func (b *OGame) getEmpire(nbr int64) (interface{}, error) {
 	return b.extractor.ExtractEmpire([]byte(pageHTML), nbr)
 }
 
+// DoAllianceApplication will do this
+func (b *OGame) DoAllianceApplication(allianceID int64) {
+	// /game/index.php?page=alliance&bewerbung=XXXXXXXXX
+
+	payload := url.Values{}
+	payload.Add("text", "")
+	payload.Add("appliedAllyId", strconv.FormatInt(int64(allianceID), 10))
+	payload.Add("token", "")
+
+	if allianceID > 0 {
+		b.postPageContent(url.Values{"page": {"allianceWriteApplication"}, "action": {"1"}}, payload)
+	}
+}
+
 // BuyAdmiral will buy the Admiral for 1 week
 func (b *OGame) BuyAdmiral() {
 	pageHTML, _ := b.getPageContent(url.Values{"page": {"premium"}, "ajax": {"1"}, "type": {"3"}})
