@@ -169,7 +169,11 @@ func (s *ShipsInfos) Sub(v ShipsInfos) {
 func (s *ShipsInfos) Div(n int64) {
 	for _, ship := range Ships {
 		shipID := ship.GetID()
-		s.Set(shipID, s.ByID(shipID)/n)
+
+		if s.ByID(shipID) > 1 {
+			s.Set(shipID, s.ByID(shipID)/n)
+		}
+
 		if s.ByID(shipID) < 1 {
 			s.Set(shipID, 0)
 		}
