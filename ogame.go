@@ -1891,17 +1891,21 @@ func (b *OGame) DoAllianceApplication(allianceID int64) {
 	}
 }
 
-// BuyAdmiral will buy the Admiral for 1 week
-func (b *OGame) BuyAdmiral() {
+// BuyAdmiral will buy the Admiral for 7 or 90 days
+func (b *OGame) BuyAdmiral(days int) {
+	if days != 7 && days != 90 {
+		return
+	}
+
 	pageHTML, _ := b.getPageContent(url.Values{"page": {"premium"}, "ajax": {"1"}, "type": {"3"}})
 
-	r1 := regexp.MustCompile(`page=premium&buynow=1&type=3&days=7&token=(\w+)`)
+	r1 := regexp.MustCompile(`page=premium&buynow=1&type=\d+&days=\d+&token=(\w+)`)
 	m1 := r1.FindSubmatch(pageHTML)
 
 	token := string(m1[1])
 
 	if len(token) > 0 {
-		b.getPageContent(url.Values{"page": {"premium"}, "buynow": {"1"}, "type": {"3"}, "days": {"7"}, "token": {token}})
+		b.getPageContent(url.Values{"page": {"premium"}, "buynow": {"1"}, "type": {"3"}, "days": {strconv.FormatInt(int64(days), 10)}, "token": {token}})
 	}
 }
 
