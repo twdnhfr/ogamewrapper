@@ -127,9 +127,9 @@ type Preferences struct {
 }
 
 const defaultUserAgent = "" +
-	"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_3) " +
+	"Mozilla/5.0 (Windows NT 10.0; Win64; x64)  " +
 	"AppleWebKit/537.36 (KHTML, like Gecko) " +
-	"Chrome/79.0.3945.130 " +
+	"Chrome/80.0.3987.132 " +
 	"Safari/537.36"
 
 type options struct {
@@ -1909,25 +1909,20 @@ func (b *OGame) BuyAdmiral(days int) {
 	}
 }
 
-func (b *OGame) createUnion(fleet Fleet, allUnionUsers []UserInfos) (int64, error) {
+func (b *OGame) createUnion(fleet Fleet, unionUsers []string) (int64, error) {
 	if fleet.ID == 0 {
 		return 0, errors.New("invalid fleet id")
 	}
 	pageHTML, _ := b.getPageContent(url.Values{"page": {"federationlayer"}, "union": {"0"}, "fleet": {strconv.FormatInt(int64(fleet.ID), 10)}, "target": {strconv.FormatInt(fleet.TargetPlanetID, 10)}, "ajax": {"1"}})
 	payload := b.extractor.ExtractFederation(pageHTML)
 
-	payload.Del("unionUsers")
-
-	var unionUsers string
-	for _, uu := range allUnionUsers {
-		if unionUsers == "" {
-			unionUsers += uu.PlayerName
-		} else {
-			unionUsers += ";" + uu.PlayerName
+	payloadUnionUsers := payload["unionUsers"]
+	for _, user := range payloadUnionUsers {
+		if user != "" {
+			unionUsers = append(unionUsers, user)
 		}
 	}
-
-	payload.Add("unionUsers", unionUsers)
+	payload.Set("unionUsers", strings.Join(unionUsers, ";"))
 
 	by, err := b.postPageContent(url.Values{"page": {"unionchange"}, "ajax": {"1"}}, payload)
 	if err != nil {
@@ -2932,7 +2927,7 @@ func (b *OGame) sendFleetV7(celestialID CelestialID, ships []Quantifiable, speed
 	} else {
 		for _, ship := range ships {
 			if ship.Nbr > availableShips.ByID(ship.ID) {
-				return Fleet{}, ErrNotEnoughShips
+				return Fleet{}, fmt.Errorf("not enough ships to send, %s", Objs.ByID(ship.ID).GetName())
 			}
 			atLeastOneShipSelected = true
 		}
@@ -4430,7 +4425,7 @@ func (b *OGame) BuyOfferOfTheDay() error {
 }
 
 // CreateUnion creates a union
-func (b *OGame) CreateUnion(fleet Fleet, users []UserInfos) (int64, error) {
+func (b *OGame) CreateUnion(fleet Fleet, users []string) (int64, error) {
 	return b.WithPriority(Normal).CreateUnion(fleet, users)
 }
 
