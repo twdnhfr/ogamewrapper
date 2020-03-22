@@ -155,6 +155,7 @@ type BaseOgameObj interface {
 	GetRequirements() map[ID]int64
 	GetPrice(int64) Resources
 	IsAvailable(CelestialType, LazyResourcesBuildings, LazyFacilities, LazyResearches, int64) bool
+	IsFulfilled(int64, LazyResourcesBuildings, LazyFacilities, LazyResearches) bool
 }
 
 // Levelable base interface for all levelable ogame objects (buildings, technologies)

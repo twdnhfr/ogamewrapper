@@ -22,6 +22,30 @@ func (b Base) GetRequirements() map[ID]int64 {
 	return b.Requirements
 }
 
+// IsFulfilled xxxx
+func (b Base) IsFulfilled(
+	levelNeeded int64,
+	lazyResourcesBuildings LazyResourcesBuildings,
+	lazyFacilities LazyFacilities,
+	lazyResearches LazyResearches,
+) bool {
+	if b.ID.IsResourceBuilding() {
+		if lazyResourcesBuildings().ByID(b.ID) >= levelNeeded {
+			return true
+		}
+	} else if b.ID.IsFacility() {
+		if lazyFacilities().ByID(b.ID) >= levelNeeded {
+			return true
+		}
+	} else if b.ID.IsTech() {
+		if lazyResearches().ByID(b.ID) >= levelNeeded {
+			return true
+		}
+	}
+
+	return false
+}
+
 // IsAvailable returns either or not the object is available to us
 func (b Base) IsAvailable(t CelestialType, lazyResourcesBuildings LazyResourcesBuildings,
 	lazyFacilities LazyFacilities, lazyResearches LazyResearches, energy int64) bool {
