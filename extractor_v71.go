@@ -35,6 +35,11 @@ func (e ExtractorV71) ExtractResourcesDetails(pageHTML []byte) (out ResourcesDet
 	return extractResourcesDetailsV71(pageHTML)
 }
 
+// ExtractMarketplaceDetails ...
+func (e ExtractorV71) ExtractMarketplaceDetails(pageHTML []byte) (offers []Marketoffer, err error) {
+	return extractMarketplaceDetailsV71(pageHTML)
+}
+
 // ExtractEspionageReport ...
 func (e ExtractorV71) ExtractEspionageReport(pageHTML []byte, location *time.Location) (EspionageReport, error) {
 	doc, _ := goquery.NewDocumentFromReader(bytes.NewReader(pageHTML))

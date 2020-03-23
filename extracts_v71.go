@@ -1,6 +1,7 @@
 package ogame
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -480,6 +481,64 @@ func extractFacilitiesFromDocV71(doc *goquery.Document) (Facilities, error) {
 	}
 	res.LunarBase = getNbrV7(doc, "moonbase")
 	return res, nil
+}
+
+func extractMarketplaceDetailsV71(pageHTML []byte) (offers []Marketoffer, err error) {
+
+	var marketplaceResponse struct {
+		Target  string `json:"target"`
+		Content struct {
+			MarketplaceMarketplaceItemsBuying string `json:"marketplace/marketplace_items_buying"`
+		} `json:"content"`
+		Files struct {
+			Js  []string `json:"js"`
+			CSS []string `json:"css"`
+		} `json:"files"`
+		Page struct {
+			StateObj string `json:"stateObj"`
+			Title    string `json:"title"`
+			URL      string `json:"url"`
+		} `json:"page"`
+		ServerTime int `json:"serverTime"`
+	}
+
+	json.Unmarshal(pageHTML, &marketplaceResponse)
+
+	content := marketplaceResponse.Content.MarketplaceMarketplaceItemsBuying
+	barr := []byte(content)
+	doc, _ := goquery.NewDocumentFromReader(bytes.NewReader(barr))
+	rows := doc.Find("div.row")
+
+	rows.Each(func(i int, s *goquery.Selection) {
+		offerTitle := s.Find("div.details h3 span")
+		offerAmount := s.Find("div.details div.quantity")
+		playerName := s.Find("div.details div.playerName span")
+
+		playerNameNormalised := strings.Replace(playerName.Text(), "von ", "", -1)
+		playerNameNormalised = strings.Replace(playerNameNormalised, "from ", "", -1)
+
+		itemNbr := ParseInt(offerAmount.Text())
+
+		offer := Marketoffer{
+			Seller:    playerNameNormalised,
+			Amount:    itemNbr,
+			Resources: Resources{},
+		}
+
+		if offerTitle.Text() == "Metall" {
+			offer.Resources.Metal = itemNbr
+		} else if offerTitle.Text() == "Crystal" {
+			offer.Resources.Crystal = itemNbr
+		} else if offerTitle.Text() == "Deuterium" {
+			offer.Resources.Deuterium = itemNbr
+		} else {
+			offer.Offer = name2id(offerTitle.Text())
+		}
+
+		offers = append(offers, offer)
+	})
+
+	return offers, nil
 }
 
 func extractProductionFromDocV71(doc *goquery.Document) ([]Quantifiable, error) {

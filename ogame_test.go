@@ -554,6 +554,20 @@ func TestExtractPlanet_es(t *testing.T) {
 	assert.Nil(t, planet.Moon)
 }
 
+func TestExtractMarketplace(t *testing.T) {
+	pageHTMLBytes, _ := ioutil.ReadFile("samples/marketplace_de.html")
+	offers, _ := NewExtractorV71().ExtractMarketplaceDetails(pageHTMLBytes)
+
+	assert.Equal(t, int64(128), offers[0].Amount)
+	assert.Equal(t, "Senator Sattelite", offers[0].Seller)
+	assert.Equal(t, BattleshipID, offers[0].Offer)
+
+	assert.Equal(t, int64(8000000), offers[5].Amount)
+	assert.Equal(t, "Marshal Andromeda", offers[5].Seller)
+	assert.Equal(t, ID(0), offers[5].Offer)
+	assert.Equal(t, Resources{Metal: 8000000}, offers[5].Resources)
+}
+
 func TestExtractPlanet_br(t *testing.T) {
 	pageHTMLBytes, _ := ioutil.ReadFile("samples/br/overview.html")
 	planet, _ := NewExtractorV6().ExtractPlanet(pageHTMLBytes, PlanetID(33633767), &OGame{language: "br"})
