@@ -6,4 +6,6 @@ type Marketoffer struct {
 	Resources Resources
 	Offer     ID
 	Amount    int64
+	ItemID    int64
+	Price     Resources
 }

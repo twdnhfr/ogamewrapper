@@ -509,30 +509,47 @@ func extractMarketplaceDetailsV71(pageHTML []byte) (offers []Marketoffer, err er
 	doc, _ := goquery.NewDocumentFromReader(bytes.NewReader(barr))
 	rows := doc.Find("div.row")
 
+	fmt.Println(content)
+
 	rows.Each(func(i int, s *goquery.Selection) {
 		offerTitle := s.Find("div.details h3 span")
 		offerAmount := s.Find("div.details div.quantity")
 		playerName := s.Find("div.details div.playerName span")
+		actionLink := s.Find("div.action a")
+
+		priceResource := s.Find("div.price h3")
+		priceAmount := s.Find("div.price div.quantity").First()
 
 		playerNameNormalised := strings.Replace(playerName.Text(), "von ", "", -1)
 		playerNameNormalised = strings.Replace(playerNameNormalised, "from ", "", -1)
 
+		itemID := ParseInt(actionLink.AttrOr("data-itemid", ""))
 		itemNbr := ParseInt(offerAmount.Text())
 
 		offer := Marketoffer{
 			Seller:    playerNameNormalised,
 			Amount:    itemNbr,
 			Resources: Resources{},
+			ItemID:    itemID,
+			Price:     Resources{},
 		}
 
 		if offerTitle.Text() == "Metall" {
 			offer.Resources.Metal = itemNbr
-		} else if offerTitle.Text() == "Crystal" {
+		} else if offerTitle.Text() == "Kristall" {
 			offer.Resources.Crystal = itemNbr
 		} else if offerTitle.Text() == "Deuterium" {
 			offer.Resources.Deuterium = itemNbr
 		} else {
 			offer.Offer = name2id(offerTitle.Text())
+		}
+
+		if priceResource.Text() == "Metall" {
+			offer.Price.Metal = ParseInt(priceAmount.Text())
+		} else if priceResource.Text() == "Kristall" {
+			offer.Price.Crystal = ParseInt(priceAmount.Text())
+		} else if priceResource.Text() == "Deuterium" {
+			offer.Price.Deuterium = ParseInt(priceAmount.Text())
 		}
 
 		offers = append(offers, offer)
