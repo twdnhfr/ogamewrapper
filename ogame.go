@@ -1877,6 +1877,63 @@ func (b *OGame) SelectCharacterClass(class CharacterClass) {
 	}, payload)
 }
 
+// SellShipsAtMarketplace will sell the ship for deuterium
+func (b *OGame) SellShipsAtMarketplace(shipID ID, amount int64) {
+	// /game/index.php?page=ingame&component=marketplace&tab=create_offer&action=submitOffer&asJson=1
+
+	// age: ingame
+	// component: marketplace
+	// tab: create_offer
+	// action: submitOffer
+	// asJson: 1
+
+	// marketItemType: 4
+	// itemType: 1
+	// itemId: 207
+	// quantity: 10
+	// priceType: 1      1 metall | 2 crystal | 3 deuterium
+	// price: 700000
+	// priceRange: 20
+
+	var price int64 = 0
+
+	if shipID == BattleshipID {
+		price = 28000
+	} else if shipID == BomberID {
+		price = 51500
+	} else if shipID == BattlecruiserID {
+		price = 53500
+	} else if shipID == CruiserID {
+		price = 14500
+	} else if shipID == DestroyerID {
+		price = 72000
+	}
+
+	price *= amount
+
+	if price == 0 || amount < 10 {
+		return
+	}
+
+	payload := url.Values{
+		"marketItemType": {strconv.FormatInt(4, 10)},
+		"itemType":       {strconv.FormatInt(1, 10)},
+		"itemId":         {strconv.FormatInt(shipID.Int64(), 10)},
+		"quantity":       {strconv.FormatInt(amount, 10)},
+		"priceType":      {strconv.FormatInt(3, 10)},
+		"price":          {strconv.FormatInt(price, 10)},
+		"priceRange":     {strconv.FormatInt(25, 10)},
+	}
+
+	b.postPageContent(url.Values{
+		"page":      {"ingame"},
+		"component": {"marketplace"},
+		"tab":       {"create_offer"},
+		"action":    {"submitOffer"},
+		"asJson":    {"1"},
+	}, payload)
+}
+
 // DoAllianceApplication will do this
 func (b *OGame) DoAllianceApplication(allianceID int64) {
 	// /game/index.php?page=alliance&bewerbung=XXXXXXXXX
