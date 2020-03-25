@@ -1877,6 +1877,71 @@ func (b *OGame) SelectCharacterClass(class CharacterClass) {
 	}, payload)
 }
 
+// BuyShipsAtMarketplace will sell the ship for deuterium
+func (b *OGame) BuyShipsAtMarketplace(shipID ID, resource int64, resourceAmount int64) {
+	// /game/index.php?page=ingame&component=marketplace&tab=create_offer&action=submitOffer&asJson=1
+
+	// age: ingame
+	// component: marketplace
+	// tab: create_offer
+	// action: submitOffer
+	// asJson: 1
+
+	// marketItemType: 3
+	// itemType: 1
+	// itemId: 203
+	// quantity: 10
+	// priceType: 3
+	// price: 64000
+	// priceRange: 25
+
+	var price float64 = 0.0
+
+	if shipID == LargeCargoID {
+		price = 16000.0
+	} else if shipID == HeavyFighterID {
+		price = 12700.0
+	}
+
+	if price < 1 {
+		return
+	}
+
+	amount := int64(math.Floor(float64(resourceAmount) / (price * 1.25)))
+
+	price *= float64(amount)
+
+	if price < 1 || amount < 10 {
+		return
+	}
+
+	if resource == 2 {
+		price *= float64(0.6)
+	} else if resource == 3 {
+		price *= float64(0.4)
+	}
+
+	fmt.Println("buying", shipID, "amount:", amount, "with price:", int64(price))
+
+	payload := url.Values{
+		"marketItemType": {strconv.FormatInt(3, 10)},
+		"itemType":       {strconv.FormatInt(1, 10)},
+		"itemId":         {strconv.FormatInt(shipID.Int64(), 10)},
+		"quantity":       {strconv.FormatInt(amount, 10)},
+		"priceType":      {strconv.FormatInt(resource, 10)},
+		"price":          {strconv.FormatInt(int64(price), 10)},
+		"priceRange":     {strconv.FormatInt(25, 10)},
+	}
+
+	b.postPageContent(url.Values{
+		"page":      {"ingame"},
+		"component": {"marketplace"},
+		"tab":       {"create_offer"},
+		"action":    {"submitOffer"},
+		"asJson":    {"1"},
+	}, payload)
+}
+
 // SellShipsAtMarketplace will sell the ship for deuterium
 func (b *OGame) SellShipsAtMarketplace(shipID ID, amount int64) {
 	// /game/index.php?page=ingame&component=marketplace&tab=create_offer&action=submitOffer&asJson=1
