@@ -1877,6 +1877,113 @@ func (b *OGame) SelectCharacterClass(class CharacterClass) {
 	}, payload)
 }
 
+// CollectStuffFromMarketplace will collect stuff from the Marketplace
+func (b *OGame) CollectStuffFromMarketplace(tab string) {
+	//  /game/index.php?page=ingame&component=marketplace&tab=history_buying&action=fetchHistoryBuyingItems&ajax=1&sorting%5Bprice%5D=&sorting%5Bdate%5D=desc&pagination%5Bpage%5D=1
+
+	// Parameters
+	// page: ingame
+	// component: marketplace
+	// tab: history_buying
+	// action: fetchHistoryBuyingItems
+	// ajax: 1
+	// sorting[price]:
+	// sorting[date]: desc
+	// pagination[page]: 1
+
+	buttonClass := "a.collect-item"
+	divClass := "div.collectItem"
+
+	action := ""
+	if tab == "history_buying" {
+		action = "fetchHistoryBuyingItems"
+	} else if tab == "history_selling" {
+		action = "fetchHistorySellingItems"
+		buttonClass = "a.collect-price"
+		divClass = "div.collectPrice"
+	} else {
+		return
+	}
+
+	params := url.Values{
+		"page":      {"ingame"},
+		"component": {"marketplace"},
+		"tab":       {tab},
+		"action":    {action},
+		"ajax":      {"1"},
+	}
+
+	params.Add("sorting[price]", "")
+	params.Add("sorting[date]", "desc")
+	params.Add("pagination[page]", "1")
+
+	pageHTML, _ := b.getPageContent(params)
+
+	var marketplaceResponse struct {
+		Target  string `json:"target"`
+		Content struct {
+			MarketplaceMarketplaceItemsHistory string `json:"marketplace/marketplace_items_history"`
+		} `json:"content"`
+		Files struct {
+			Js  []string `json:"js"`
+			CSS []string `json:"css"`
+		} `json:"files"`
+		Page struct {
+			StateObj string `json:"stateObj"`
+			Title    string `json:"title"`
+			URL      string `json:"url"`
+		} `json:"page"`
+		ServerTime int `json:"serverTime"`
+	}
+
+	err := json.Unmarshal(pageHTML, &marketplaceResponse)
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	content := marketplaceResponse.Content.MarketplaceMarketplaceItemsHistory
+	barr := []byte(content)
+	doc, _ := goquery.NewDocumentFromReader(bytes.NewReader(barr))
+	links := doc.Find(buttonClass)
+
+	toBeCollected := []int64{}
+
+	links.Each(func(i int, s *goquery.Selection) {
+		thediv := s.Find(divClass).First()
+
+		if thediv.HasClass("disabled") == false {
+			transactionid := ParseInt(s.AttrOr("data-transactionid", ""))
+			toBeCollected = append(toBeCollected, transactionid)
+		}
+	})
+
+	for _, transID := range toBeCollected {
+		// /game/index.php?
+		// page=componentOnly
+		// component=marketplace
+		// action=collectItem
+		// marketTransactionId=5735
+		// asJson=1
+		actionParam := "collectItem"
+
+		if tab == "history_selling" {
+			actionParam = "collectPrice"
+		}
+
+		params := url.Values{
+			"page":                {"componentOnly"},
+			"component":           {"marketplace"},
+			"action":              {actionParam},
+			"marketTransactionId": {strconv.FormatInt(int64(transID), 10)},
+			"asJson":              {"1"},
+		}
+
+		b.getPageContent(params)
+	}
+}
+
 // BuyShipsAtMarketplace will sell the ship for deuterium
 func (b *OGame) BuyShipsAtMarketplace(shipID ID, resource int64, resourceAmount int64) {
 	// /game/index.php?page=ingame&component=marketplace&tab=create_offer&action=submitOffer&asJson=1
